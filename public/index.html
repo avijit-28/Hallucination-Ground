@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>HALLUCINATION GROUND - Party Game</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app" class="app-container">
+    <!-- Top Navigation Bar -->
+    <header class="top-bar">
+      <div class="logo">
+        <span class="on-air-badge"><span class="on-air-dot"></span> LIVE</span>
+        <span class="logo-text">HALLUCINATION GROUND</span>
+      </div>
+      <div class="header-right">
+        <div id="header-room-pill" class="room-pill hidden">
+          CODE: <strong id="header-room-code">----</strong>
+        </div>
+        <button id="sound-btn" class="icon-btn" title="Toggle Sound">🔊</button>
+      </div>
+    </header>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden"></div>
+
+    <main class="main-content">
+      <!-- SCREEN 1: LANDING / ENTRY -->
+      <section id="screen-landing" class="screen active">
+        <div class="hero-card">
+          <div class="hero-graphic">🌀 👁️ 🎭</div>
+          <h1 class="hero-title">Invent the Lie.<br>Spot the Truth.</h1>
+          <p class="hero-desc">7 wild questions. Masterful deception. Fast buzzing.</p>
+
+          <div class="landing-tabs">
+            <button id="tab-join" class="tab-btn active">Join Game</button>
+            <button id="tab-host" class="tab-btn">Host on this Screen</button>
+          </div>
+
+          <!-- Join Form -->
+          <div id="join-section" class="tab-content active">
+            <div class="form-group">
+              <label for="room-code-input">4-Letter Room Code</label>
+              <input type="text" id="room-code-input" maxlength="4" placeholder="e.g. ABCD" autocomplete="off" autocorrect="off" autocapitalize="characters" class="code-input">
+            </div>
+
+            <div class="form-group">
+              <label for="player-name-input">Your Nickname</label>
+              <input type="text" id="player-name-input" maxlength="12" placeholder="e.g. Maverick" autocomplete="off" class="text-input">
+            </div>
+
+            <div class="form-group">
+              <label>Pick an Avatar</label>
+              <div class="avatar-picker" id="avatar-picker">
+                <button type="button" class="avatar-option selected" data-avatar="🦊">🦊</button>
+                <button type="button" class="avatar-option" data-avatar="🦁">🦁</button>
+                <button type="button" class="avatar-option" data-avatar="🐼">🐼</button>
+                <button type="button" class="avatar-option" data-avatar="🐸">🐸</button>
+                <button type="button" class="avatar-option" data-avatar="🦄">🦄</button>
+                <button type="button" class="avatar-option" data-avatar="🤖">🤖</button>
+                <button type="button" class="avatar-option" data-avatar="🐙">🐙</button>
+                <button type="button" class="avatar-option" data-avatar="🐯">🐯</button>
+              </div>
+            </div>
+
+            <button id="btn-join" class="btn btn-primary btn-block btn-lg">ENTER ROOM</button>
+          </div>
+
+          <!-- Host Section -->
+          <div id="host-section" class="tab-content">
+            <p class="host-info">Hosting creates a room screen and grants host authority to launch each round.</p>
+            <button id="btn-create-room" class="btn btn-accent btn-block btn-lg">CREATE NEW ROOM</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: LOBBY -->
+      <section id="screen-lobby" class="screen">
+        <div class="lobby-card">
+          <div class="lobby-header">
+            <span class="badge">ROOM CODE</span>
+            <div class="big-room-code" id="display-room-code">----</div>
+            <div class="join-url-box">
+              <span id="join-url-text">http://localhost:3000/?room=CODE</span>
+              <button id="btn-copy-url" class="btn btn-sm btn-ghost">Copy Link</button>
+            </div>
+            <div id="qrcode-container" class="qrcode-wrapper"></div>
+          </div>
+
+          <div class="players-section">
+            <div class="players-header">
+              <h3>Joined Players (<span id="player-count">0</span>/8)</h3>
+              <button id="btn-add-bot" class="btn btn-sm btn-secondary" title="Add a bot player for testing">+ Add Bot</button>
+            </div>
+            <div id="players-grid" class="players-grid">
+              <!-- Player cards injected here -->
+            </div>
+          </div>
+
+          <!-- Host Controls -->
+          <div id="host-actions-container" class="lobby-actions">
+            <button id="btn-start-game" class="btn btn-primary btn-lg btn-block pulse">START GAME (Need 2+)</button>
+          </div>
+
+          <!-- Player Waiting Notice (When Not Host) -->
+          <div id="player-waiting-notice" class="waiting-host-notice hidden">
+            <div class="host-crown">👑</div>
+            <p>Waiting for the host to start the game...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 3: QUESTION / BLUFFING PHASE -->
+      <section id="screen-bluff" class="screen">
+        <div class="game-card">
+          <div class="round-bar">
+            <span id="bluff-round-tag" class="round-pill">ROUND 1</span>
+            <span id="bluff-progress-tag" class="progress-pill">QUESTION 1 OF 7</span>
+            <span id="bluff-mult-tag" class="multiplier-pill">1x POINTS</span>
+            <div class="timer-badge">⏱️ <span id="bluff-timer">35</span>s</div>
+          </div>
+
+          <div class="prompt-box">
+            <h2 id="bluff-prompt-text" class="prompt-text">Loading question...</h2>
+          </div>
+
+          <!-- Active Bluff Input for Player -->
+          <div id="bluff-input-container" class="bluff-input-box">
+            <label for="bluff-input">Enter your believable lie:</label>
+            <div class="input-with-button">
+              <input type="text" id="bluff-input" maxlength="70" placeholder="Type a convincing fake answer..." autocomplete="off">
+              <button id="btn-submit-bluff" class="btn btn-primary">SUBMIT LIE</button>
+            </div>
+            <p class="bluff-tip">💡 Tip: If you fool other players into picking your lie, you steal their points!</p>
+          </div>
+
+          <!-- Submitted Status -->
+          <div id="bluff-submitted-msg" class="bluff-status-box hidden">
+            <div class="submitted-check">✅</div>
+            <h3>Lie Submitted!</h3>
+            <p id="submitted-bluff-preview" class="bluff-preview-text">"..."</p>
+            <p class="waiting-text">Waiting for other players to craft their lies...</p>
+            <div id="bluff-players-status" class="status-chips"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4: FAST BUZZ / VOTING PHASE -->
+      <section id="screen-voting" class="screen">
+        <div class="game-card">
+          <div class="round-bar">
+            <span class="round-pill voting-pulse">🔥 SPOT THE TRUTH</span>
+            <span id="voting-progress-tag" class="progress-pill">QUESTION 1 OF 7</span>
+            <div class="timer-badge timer-fast">⏱️ <span id="voting-timer">20</span>s</div>
+          </div>
+
+          <div class="prompt-box prompt-compact">
+            <p id="voting-prompt-text" class="prompt-text-sm">Loading question...</p>
+          </div>
+
+          <div class="voting-instruction">
+            <span>Tap the <strong>REAL TRUTH</strong>! Buzz quickly for speed bonus!</span>
+          </div>
+
+          <!-- Grid of randomized bluffs + truth -->
+          <div id="choices-grid" class="choices-grid">
+            <!-- Choice buttons injected here -->
+          </div>
+
+          <div id="voted-feedback" class="voted-status hidden">
+            <div class="spinner"></div>
+            <p>Vote locked in! Awaiting remaining players...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 5: REVEAL PHASE -->
+      <section id="screen-reveal" class="screen">
+        <div class="game-card reveal-card">
+          <div class="reveal-header">
+            <h2>THE REVEAL</h2>
+            <div class="timer-badge">Next in <span id="reveal-timer">12</span>s</div>
+          </div>
+
+          <div class="reveal-prompt">
+            <p id="reveal-prompt-text">...</p>
+          </div>
+
+          <!-- Cards Reveal Grid -->
+          <div id="reveal-cards-container" class="reveal-cards-container">
+            <!-- Bluffs and Truth cards animated here -->
+          </div>
+
+          <!-- Fun Fact Box -->
+          <div class="fun-fact-box" id="fun-fact-box">
+            <span class="fact-icon">💡</span>
+            <div class="fact-content">
+              <strong>The True Story:</strong>
+              <p id="fun-fact-text">...</p>
+            </div>
+          </div>
+
+          <!-- Mini Leaderboard -->
+          <div class="reveal-leaderboard">
+            <h3>Current Standings</h3>
+            <div id="reveal-leaderboard-list" class="leaderboard-list">
+              <!-- Player scores injected here -->
+            </div>
+          </div>
+
+          <div class="reveal-actions">
+            <button id="btn-next-question" class="btn btn-secondary">Next Question &rarr;</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 6: GAME OVER / PODIUM -->
+      <section id="screen-gameover" class="screen">
+        <div class="game-card podium-card">
+          <div class="confetti-cannon">🎉 🏆 👑</div>
+          <h1 class="gameover-title">GAME COMPLETED!</h1>
+
+          <!-- Top 3 Podium -->
+          <div id="podium-display" class="podium-display">
+            <!-- Injected dynamically -->
+          </div>
+
+          <!-- Fun Accolades -->
+          <div id="badges-container" class="badges-container">
+            <!-- Master Deceiver, Sharp Eye, Lightning Buzzer -->
+          </div>
+
+          <!-- Full Scoreboard -->
+          <div class="final-scoreboard">
+            <h3>Final Scoreboard</h3>
+            <div id="final-leaderboard-list" class="leaderboard-list"></div>
+          </div>
+
+          <button id="btn-play-again" class="btn btn-primary btn-lg btn-block pulse">PLAY AGAIN</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

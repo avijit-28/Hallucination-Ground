@@ -1,0 +1,23 @@
+{
+  "name": "hallucination-ground",
+  "version": "1.0.0",
+  "description": "Hallucination Ground - Real-time multiplayer trivia and bluffing party game",
+  "type": "module",
+  "scripts": {
+    "build": "npx esbuild netlify/functions/game.ts --bundle --platform=node --target=node20 --format=esm --packages=external --outfile=dist/functions/game.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node test/runGameTest.js",
+    "package": "node scripts/createZip.js"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^11.1.6",
+    "@netlify/functions": "^6.0.3"
+  },
+  "devDependencies": {
+    "@types/archiver": "^8.0.0",
+    "@types/node": "^26.6.5",
+    "archiver": "^8.0.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  }
+}
